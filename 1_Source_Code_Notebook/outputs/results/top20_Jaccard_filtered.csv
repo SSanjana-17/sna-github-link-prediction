@@ -1,0 +1,21 @@
+rank,source,source_name,target,target_name,pair_type,deg_source,deg_target,CN,Jaccard,AdamicAdar,PA
+1,5288,rcassola,17357,iamsivab,ml-ml,8.0,8.0,8,1.0,1.4813106212961422,64
+2,34228,loganlennox,35594,lucascaires,cross (web-ml),5.0,5.0,5,1.0,0.759115575431415,25
+3,2338,cncqw,21681,KianMderi,cross (web-ml),3.0,3.0,3,1.0,0.522814264271628,9
+4,2802,brandon14,27218,ArchanjoJr,web-web,3.0,3.0,3,1.0,0.38176539373879603,9
+5,4773,Nsima,24322,abejide001,web-web,3.0,3.0,3,1.0,0.49329915810044256,9
+6,5166,FanHuaRan,27218,ArchanjoJr,web-web,3.0,3.0,3,1.0,0.38176539373879603,9
+7,7989,micafe,37672,pablogventura,cross (web-ml),3.0,3.0,3,1.0,0.35090778743252793,9
+8,9450,amee9451,20993,dandeveloper,web-web,3.0,3.0,3,1.0,0.3647927513395865,9
+9,12547,rajpalkulhari,24740,ajayrawat12,ml-ml,3.0,3.0,3,1.0,0.4647065273440517,9
+10,15083,bhavyaghai,32984,jiangzepeng,cross (web-ml),3.0,3.0,3,1.0,0.4104459285585673,9
+11,17266,ian0549,27359,RickCole21,cross (web-ml),3.0,3.0,3,1.0,0.40405752056090954,9
+12,23359,ShengQiangLiu,31775,KyleRuan,web-web,3.0,3.0,3,1.0,0.43743870459407264,9
+13,24650,reginabattle,37672,pablogventura,cross (web-ml),3.0,3.0,3,1.0,0.35090778743252793,9
+14,11,beeva-manueldepaz,1671,OldskoolOrion,web-web,2.0,2.0,2,1.0,0.2220283128837968,4
+15,11,beeva-manueldepaz,2109,ihamidraza,web-web,2.0,2.0,2,1.0,0.2220283128837968,4
+16,147,chaodaqing,5587,suyear,web-web,2.0,2.0,2,1.0,0.2967561155155408,4
+17,191,Kingson4Wu,16834,ZhuoSir,cross (web-ml),2.0,2.0,2,1.0,0.2883337578721856,4
+18,579,thuansb,2827,Apedneka,web-web,2.0,2.0,2,1.0,0.3505976464108099,4
+19,579,thuansb,22115,lpbearden,web-web,2.0,2.0,2,1.0,0.3505976464108099,4
+20,979,taliove,10010,shupiankuaile,cross (web-ml),2.0,2.0,2,1.0,0.33146612971734524,4

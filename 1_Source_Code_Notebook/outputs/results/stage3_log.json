@@ -1,0 +1,14 @@
+{
+  "pairs_scored": 115602,
+  "seconds": 3.2,
+  "matches_networkx": {
+    "CN": true,
+    "Jaccard": true,
+    "AdamicAdar": true,
+    "PA": true
+  },
+  "share_with_zero_common_neighbors": {
+    "positive": 0.2734,
+    "negative": 0.907
+  }
+}

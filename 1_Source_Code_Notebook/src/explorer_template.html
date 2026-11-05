@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Link Prediction Explorer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<style>
+  :root {
+    --surface: #fcfcfb; --panel: #f3f2ee; --ink: #0b0b0b; --ink2: #52514e; --line: #dcdbd5;
+    --web: #2a78d6; --ml: #eb6834; --pred: #e34948; --edge: #b8b7b0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Inter", system-ui, -apple-system, Segoe UI, sans-serif; background: var(--surface); color: var(--ink); }
+  header { padding: 18px 24px 12px; border-bottom: 1px solid var(--line); }
+  h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
+  header p { margin: 0; color: var(--ink2); font-size: 13.5px; max-width: 900px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; padding: 12px 24px; border-bottom: 1px solid var(--line); }
+  .group { display: flex; gap: 4px; align-items: center; }
+  .group span { font-size: 12px; color: var(--ink2); margin-right: 6px; text-transform: uppercase; letter-spacing: .04em; }
+  button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line);
+           background: var(--surface); color: var(--ink); cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  main { display: grid; grid-template-columns: 1fr 320px; height: calc(100vh - 142px); min-height: 520px; }
+  #cy { width: 100%; height: 100%; }
+  aside { border-left: 1px solid var(--line); padding: 16px; overflow: auto; background: var(--panel); font-size: 13px; }
+  aside h2 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink2); }
+  .legend div { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dash { width: 22px; border-top: 3px dashed var(--pred); display: inline-block; }
+  .solid { width: 22px; border-top: 2px solid var(--edge); display: inline-block; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  td, th { text-align: left; padding: 4px 4px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { color: var(--ink2); font-weight: 500; font-size: 12px; }
+  tr.rec { cursor: pointer; }
+  tr.rec:hover { background: #e8e7e2; }
+  #info { margin: 14px 0; padding: 10px; background: var(--surface); border-radius: 8px; border: 1px solid var(--line); min-height: 60px; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; height: auto; } #cy { height: 70vh; } aside { border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>GitHub developer link prediction — Top-20 recommendations</h1>
+  <p>Each dashed red line is a predicted "should follow" link. Grey lines connect the two developers to the shared neighbours that justify the prediction (up to four lowest-degree shared neighbours shown). Click a dashed link or a developer for details; drag to rearrange.</p>
+</header>
+<div class="controls">
+  <div class="group" id="methods"><span>Method</span></div>
+  <div class="group" id="lists"><span>List</span></div>
+  <div class="group"><button id="fit">Fit to view</button></div>
+</div>
+<main>
+  <div id="cy" role="img" aria-label="Network of recommended developer links"></div>
+  <aside>
+    <h2>Legend</h2>
+    <div class="legend">
+      <div><span class="dot" style="background:var(--web)"></span>Web developer</div>
+      <div><span class="dot" style="background:var(--ml)"></span>ML developer</div>
+      <div><span class="dash"></span>Recommended link</div>
+      <div><span class="solid"></span>Existing link to a shared neighbour</div>
+    </div>
+    <div id="info">Click an element to see its details.</div>
+    <h2 id="tableTitle">Top-20</h2>
+    <table><thead><tr><th>#</th><th>Pair</th><th>CN</th><th>Score</th></tr></thead><tbody id="rows"></tbody></table>
+  </aside>
+</main>
+<script>
+const VIEWS = __VIEWS__;
+const NAMES = {CN: "Common Neighbors", Jaccard: "Jaccard", AdamicAdar: "Adamic-Adar", PA: "Pref. Attachment"};
+let method = "AdamicAdar", list = "filtered";
+const cy = cytoscape({
+  container: document.getElementById("cy"),
+  wheelSensitivity: 0.3,
+  style: [
+    {selector: "node", style: {"background-color": e => e.data("community") === "ml" ? "#eb6834" : "#2a78d6",
+      "width": e => e.data("role") === "candidate" ? 26 : 10, "height": e => e.data("role") === "candidate" ? 26 : 10,
+      "opacity": e => e.data("role") === "candidate" ? 1 : .55,
+      "border-width": e => e.data("role") === "candidate" ? 2 : 0, "border-color": "#0b0b0b",
+      "label": e => e.data("role") === "candidate" ? e.data("label") : "", "font-size": 10, "color": "#0b0b0b",
+      "text-valign": "top", "text-margin-y": -4, "text-background-color": "#fcfcfb", "text-background-opacity": .85,
+      "text-background-padding": 2}},
+    {selector: "edge[kind='existing']", style: {"line-color": "#b8b7b0", "width": 1, "opacity": .7, "curve-style": "haystack"}},
+    {selector: "edge[kind='predicted']", style: {"line-color": "#e34948", "width": 3, "line-style": "dashed", "curve-style": "bezier", "z-index": 10}},
+    {selector: ":selected", style: {"overlay-color": "#0b0b0b", "overlay-opacity": .12}},
+    {selector: ".faded", style: {"opacity": .12}}
+  ]
+});
+function buttons(id, items, get, set) {
+  const g = document.getElementById(id);
+  items.forEach(([k, label]) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.dataset.k = k;
+    b.onclick = () => { set(k); render(); };
+    g.appendChild(b);
+  });
+}
+buttons("methods", Object.entries(NAMES), () => method, k => method = k);
+buttons("lists", [["filtered", "Filtered"], ["raw", "Raw"]], () => list, k => list = k);
+function render() {
+  document.querySelectorAll("#methods button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === method));
+  document.querySelectorAll("#lists button").forEach(b => b.setAttribute("aria-pressed", b.dataset.k === list));
+  cy.elements().remove();
+  cy.add(VIEWS[method + "|" + list]);
+  cy.layout({name: "cose", animate: false, randomize: true, nodeRepulsion: () => 9000, idealEdgeLength: e => e.data("kind") === "predicted" ? 90 : 45,
+             gravity: .4, numIter: 2500, padding: 20, componentSpacing: 60}).run();
+  const label = id => cy.getElementById(id).data("label");
+  const preds = cy.edges("[kind='predicted']").sort((a, b) => a.data("rank") - b.data("rank"));
+  document.getElementById("tableTitle").textContent = `Top-20 · ${NAMES[method]} · ${list}`;
+  document.getElementById("rows").innerHTML = preds.map(e =>
+    `<tr class="rec" data-id="${e.id()}"><td>${e.data("rank")}</td><td>${label(e.data("source"))} ↔ ${label(e.data("target"))}</td><td>${e.data("cn")}</td><td>${(+e.data("score")).toLocaleString(undefined, {maximumFractionDigits: 3})}</td></tr>`).join("");
+  document.querySelectorAll("tr.rec").forEach(tr => tr.onclick = () => focusEdge(cy.getElementById(tr.dataset.id)));
+  document.getElementById("info").textContent = "Click an element to see its details.";
+}
+function focusEdge(e) {
+  cy.elements().addClass("faded");
+  const nb = e.connectedNodes().neighborhood().add(e.connectedNodes()).add(e);
+  nb.removeClass("faded");
+  cy.animate({fit: {eles: nb, padding: 60}}, {duration: 300});
+  const s = e.source(), t = e.target();
+  document.getElementById("info").innerHTML = `<b>#${e.data("rank")}: ${s.data("label")} ↔ ${t.data("label")}</b><br>
+    ${NAMES[method]} score: ${(+e.data("score")).toLocaleString()}<br>Common neighbours: ${e.data("cn")}<br>
+    Degrees: ${s.data("degree").toLocaleString()} and ${t.data("degree").toLocaleString()}<br>
+    Communities: ${s.data("community")} – ${t.data("community")}`;
+}
+cy.on("tap", "edge[kind='predicted']", ev => focusEdge(ev.target));
+cy.on("tap", "node", ev => {
+  const n = ev.target;
+  cy.elements().removeClass("faded");
+  document.getElementById("info").innerHTML = `<b>${n.data("label")}</b><br>${n.data("community") === "ml" ? "ML" : "Web"} developer<br>
+    Degree: ${n.data("degree").toLocaleString()}<br>Role: ${n.data("role")}`;
+});
+cy.on("tap", ev => { if (ev.target === cy) { cy.elements().removeClass("faded"); } });
+document.getElementById("fit").onclick = () => { cy.elements().removeClass("faded"); cy.fit(undefined, 20); };
+render();
+</script>
+</body>
+</html>

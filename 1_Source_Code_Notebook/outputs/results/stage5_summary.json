@@ -1,0 +1,57 @@
+{
+  "pool_train": 1050954,
+  "pool_full": 1043890,
+  "celebrity_degree_cap": 138.00999450683594,
+  "examples": {
+    "ml": {
+      "id": 120,
+      "name": "nrkfeller",
+      "degree": 25,
+      "two_hop_candidates": 15976
+    },
+    "web": {
+      "id": 21,
+      "name": "tiensonqin",
+      "degree": 33,
+      "two_hop_candidates": 15758
+    }
+  },
+  "pair_type_mix": {
+    "CN_raw": {
+      "web-web": 19,
+      "cross (web-ml)": 1
+    },
+    "CN_filtered": {
+      "web-web": 16,
+      "cross (web-ml)": 4
+    },
+    "Jaccard_raw": {
+      "web-web": 10,
+      "cross (web-ml)": 8,
+      "ml-ml": 2
+    },
+    "Jaccard_filtered": {
+      "web-web": 10,
+      "cross (web-ml)": 8,
+      "ml-ml": 2
+    },
+    "AdamicAdar_raw": {
+      "web-web": 19,
+      "cross (web-ml)": 1
+    },
+    "AdamicAdar_filtered": {
+      "web-web": 13,
+      "cross (web-ml)": 4,
+      "ml-ml": 3
+    },
+    "PA_raw": {
+      "web-web": 18,
+      "cross (web-ml)": 2
+    },
+    "PA_filtered": {
+      "web-web": 18,
+      "cross (web-ml)": 1,
+      "ml-ml": 1
+    }
+  }
+}

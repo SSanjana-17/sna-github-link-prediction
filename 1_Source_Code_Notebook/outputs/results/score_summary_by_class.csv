@@ -1,0 +1,9 @@
+,,0,1
+CN,mean,0.112,3.6566
+CN,median,0.0,2.0
+Jaccard,mean,0.0058,0.0198
+Jaccard,median,0.0,0.0072
+AdamicAdar,mean,0.0152,0.8654
+AdamicAdar,median,0.0,0.3005
+PA,mean,139.7229,22894.1363
+PA,median,22.0,2043.0
